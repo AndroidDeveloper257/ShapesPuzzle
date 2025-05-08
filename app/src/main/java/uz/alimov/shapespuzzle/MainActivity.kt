@@ -1,27 +1,31 @@
 package uz.alimov.shapespuzzle
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposePath
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,7 +46,8 @@ import uz.alimov.shapespuzzle.model.HoleItem
 import uz.alimov.shapespuzzle.model.ShapeItem
 import uz.alimov.shapespuzzle.ui.theme.ShapesPuzzleTheme
 import uz.alimov.shapespuzzle.utils.Shape
-import kotlin.random.Random
+import uz.alimov.shapespuzzle.utils.shapeColors
+import kotlin.coroutines.cancellation.CancellationException
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,6 +61,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ShapesPuzzleApp() {
     val context = LocalContext.current
@@ -62,21 +70,18 @@ fun ShapesPuzzleApp() {
         mutableStateOf<Int?>(null)
     }
 
+    val shuffledColors = shapeColors.shuffled()
+
     val shapes = remember {
-        Shape.entries.map { shape ->
+        Shape.entries.mapIndexed { index, shape ->
             ShapeItem(
                 shape = shape,
-                color = Color(
-                    Random.nextFloat(),
-                    Random.nextFloat(),
-                    Random.nextFloat(),
-                    1f
-                )
+                color = shuffledColors[index]
             )
         }.toMutableStateList()
     }
 
-    val holes = remember {
+    var holes = remember {
         Shape.entries.shuffled().map { shape ->
             HoleItem(shape = shape)
         }.toMutableStateList()
@@ -93,21 +98,25 @@ fun ShapesPuzzleApp() {
             verticalArrangement = Arrangement.SpaceAround,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LazyRow(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(
-                    20.dp
-                )
+                horizontalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                items(shapes.size) { index ->
-                    val item = shapes[index]
+                shapes.forEachIndexed { index, item ->
                     ShapeCard(
-                        shape = item.shape,
+                        shape = item,
                         color = if (item.isMatched) Color.Gray else item.color,
                         showX = item.isMatched,
-                        onClick = {
-                            if (!item.isMatched) selectedShapeIndex = index
+                        onSelect = {
+                            selectedShapeIndex = index
+                            shapes.indices.forEach { i ->
+                                shapes[i] = shapes[i].copy(isSelected = i == index)
+                            }
+                        },
+                        onDeselect = {
+                            shapes[index] = item.copy(isSelected = false)
+                            selectedShapeIndex = null
                         }
                     )
                 }
@@ -115,56 +124,101 @@ fun ShapesPuzzleApp() {
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            LazyRow(
+            FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Gray),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(
-                    20.dp
-                )
+                    .background(Color.Gray)
+                    .padding(20.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                items(holes.size) { index ->
-                    val hole = holes[index]
+                holes.forEachIndexed { index, hole ->
                     HoleCard(
                         shape = hole.shape,
                         color = if (hole.isFilled) shapes.first { it.shape == hole.shape }.color else Color.White,
+                        isFilled = hole.isFilled,
                         onClick = {
-                            val selectedIndex = selectedShapeIndex
-                            if (selectedIndex != null) {
-                                val selectedShape = shapes[selectedIndex]
-                                if (selectedShape.shape == hole.shape) {
-                                    shapes[selectedIndex] = selectedShape.copy(isMatched = true)
-                                    holes[index] = hole.copy(isFilled = true)
-                                    selectedShapeIndex = null
-                                } else {
-                                    Toast.makeText(context, "Wrong!", Toast.LENGTH_SHORT).show()
+                            selectedShapeIndex?.let { selectedIndex ->
+                                if (selectedIndex != -1) {
+                                    val selectedShape = shapes[selectedIndex]
+                                    if (selectedShape.shape == hole.shape) {
+                                        shapes[selectedIndex] =
+                                            selectedShape.copy(isMatched = true, isSelected = false)
+                                        holes[index] = hole.copy(isFilled = true)
+                                    } else {
+                                        Toast.makeText(context, "Wrong!", Toast.LENGTH_SHORT).show()
+                                        shapes[selectedIndex] =
+                                            selectedShape.copy(isSelected = false)
+                                        selectedShapeIndex = null
+                                    }
                                 }
                             }
                         }
                     )
-                }
-                holes.forEachIndexed { index, hole ->
-
                 }
             }
         }
     }
 }
 
+@SuppressLint("AutoboxingStateCreation")
 @Composable
 fun ShapeCard(
-    shape: Shape,
+    shape: ShapeItem,
     color: Color,
     showX: Boolean,
-    onClick: () -> Unit
+    onSelect: () -> Unit,
+    onDeselect: () -> Unit
 ) {
+    var scale by remember { mutableStateOf(1f) }
+
+    // React to isSelected and isMatched changes
+    LaunchedEffect(shape.isSelected, shape.isMatched) {
+        scale = when {
+            shape.isMatched -> 1f // no effect when matched
+            shape.isSelected -> 0.9f // selected resting scale
+            else -> 1f // unselected resting scale
+        }
+    }
+
+    val targetScale by animateFloatAsState(
+        targetValue = scale,
+        animationSpec = tween(100)
+    )
+
     Box(
         modifier = Modifier
-            .size(80.dp)
-            .clickable { onClick() }
+            .size(100.dp)
+            .padding(10.dp)
+            .graphicsLayer(scaleX = targetScale, scaleY = targetScale)
+            .pointerInput(shape.isMatched, shape.isSelected) {
+                if (!shape.isMatched) {
+                    detectTapGestures(
+                        onPress = {
+                            scale = if (shape.isSelected) 0.7f else 0.8f
+                            val releasedInside = try {
+                                awaitRelease()
+                                true
+                            } catch (e: CancellationException) {
+                                false
+                            }
+
+                            if (releasedInside) {
+                                if (shape.isSelected) {
+                                    onDeselect()
+                                } else {
+                                    onSelect()
+                                }
+                            } else {
+                                scale = if (shape.isSelected) 0.9f else 1f
+                            }
+                        }
+                    )
+                }
+            },
+        contentAlignment = Alignment.Center
     ) {
-        ShapeCanvas(shape, color)
+        ShapeCanvas(shape.shape, color)
         if (showX) {
             Text(
                 text = "X",
@@ -175,16 +229,42 @@ fun ShapeCard(
     }
 }
 
+
 @Composable
 fun HoleCard(
     shape: Shape,
     color: Color,
+    isFilled: Boolean,
     onClick: () -> Unit
 ) {
+    var scale by remember { mutableStateOf(1f) }
+    val animatedScale by animateFloatAsState(
+        targetValue = scale,
+        animationSpec = tween(100)
+    )
+
     Box(
         modifier = Modifier
-            .size(80.dp)
-            .clickable { onClick() },
+            .size(100.dp)
+            .padding(10.dp)
+            .graphicsLayer(scaleX = animatedScale, scaleY = animatedScale)
+            .then(
+                if (!isFilled) {
+                    Modifier.pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                scale = 0.9f
+                                try {
+                                    awaitRelease()
+                                } finally {
+                                    scale = 1f
+                                    onClick()
+                                }
+                            }
+                        )
+                    }
+                } else Modifier // no gesture when filled
+            ),
         contentAlignment = Alignment.Center
     ) {
         ShapeCanvas(shape, color)
