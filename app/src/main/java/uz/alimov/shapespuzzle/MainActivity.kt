@@ -199,7 +199,7 @@ fun ShapeCard(
                             val releasedInside = try {
                                 awaitRelease()
                                 true
-                            } catch (e: CancellationException) {
+                            } finally {
                                 false
                             }
 
