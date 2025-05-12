@@ -1,6 +1,5 @@
-package uz.alimov.shapespuzzle.ui.theme
+package uz.alimov.shapespuzzle.presentation.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

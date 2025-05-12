@@ -1,4 +1,4 @@
-package uz.alimov.shapespuzzle.ui.theme
+package uz.alimov.shapespuzzle.presentation.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

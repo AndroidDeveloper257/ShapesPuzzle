@@ -1,4 +1,4 @@
-package uz.alimov.shapespuzzle.model
+package uz.alimov.shapespuzzle.domain.model
 
 import androidx.compose.ui.graphics.Color
 import uz.alimov.shapespuzzle.utils.Shape
