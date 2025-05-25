@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package uz.alimov.shapespuzzle.presentation.screen.play
 
 import android.annotation.SuppressLint
@@ -202,6 +200,7 @@ fun PlayScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Congratulate(
     onBack: () -> Unit
