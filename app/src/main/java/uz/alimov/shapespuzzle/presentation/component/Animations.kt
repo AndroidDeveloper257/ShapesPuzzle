@@ -26,6 +26,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import kotlinx.coroutines.delay
 import uz.alimov.shapespuzzle.R
+import uz.alimov.shapespuzzle.presentation.screen.home.ShinyButton
 
 @Composable
 fun DisplayLottieAnimation(
@@ -106,15 +107,12 @@ fun Congratulate(
                     modifier = Modifier.fillMaxSize()
                 )
             }
-            Button(
+
+            ShinyButton(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = onBack
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.KeyboardArrowLeft,
-                    contentDescription = null
-                )
-            }
+                onClick = onBack,
+                text = "Close"
+            )
         }
     }
 }

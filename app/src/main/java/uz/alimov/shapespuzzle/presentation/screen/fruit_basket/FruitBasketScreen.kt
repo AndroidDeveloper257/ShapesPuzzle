@@ -1,14 +1,10 @@
 package uz.alimov.shapespuzzle.presentation.screen.fruit_basket
 
-import android.content.Context
 import android.media.MediaPlayer
-import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -76,74 +72,82 @@ fun FruitBasketScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
+        modifier = Modifier.fillMaxSize()
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
 
-        // Pick bin positions based on count
-        val allPositions = listOf(
-            Alignment.TopStart,
-            Alignment.TopEnd,
-            Alignment.BottomStart,
-            Alignment.BottomEnd,
-            Alignment.CenterStart,
-            Alignment.CenterEnd
-        )
+            val allPositions = listOf(
+                Alignment.TopStart,
+                Alignment.TopEnd,
+                Alignment.BottomStart,
+                Alignment.BottomEnd,
+                Alignment.CenterStart,
+                Alignment.CenterEnd
+            )
 
-        val binPositions = remember(mode) {
-            allPositions.shuffled().take(mode.fruitTypes)
-        }
-
-        binBounds.clear()
-        binPositions.forEachIndexed { index, alignment ->
-            Box(
-                modifier = Modifier
-                    .align(alignment)
-                    .padding(16.dp)
-                    .onGloballyPositioned { coordinates ->
-                        val rect = coordinates.boundsInWindow()
-                        if (binBounds.size > index) {
-                            binBounds[index] = rect
-                        } else {
-                            binBounds.add(rect)
-                        }
-                    }
-            ) {
-                FruitTrashBin(fruitType = chosenFruits[index])
+            val binPositions = remember(mode) {
+                allPositions.shuffled().take(mode.fruitTypes)
             }
-        }
 
-        // Show draggable fruits
-        fruits.forEach { fruitInstance ->
-            key(fruitInstance.id) {
-                DraggableFruit(
-                    fruitInstance = fruitInstance,
-                    binBounds = binBounds,
-                    chosenFruits = chosenFruits,
-                    onCorrectDrop = {
-                        fruits.remove(fruitInstance)
-                        if (fruits.isEmpty()) {
-                            isGameOver = true
-                        } else {
-                            currentLottieRes = R.raw.correct
-                            successSoundPlayer.start()
+            binBounds.clear()
+            binPositions.forEachIndexed { index, alignment ->
+                Box(
+                    modifier = Modifier
+                        .align(alignment)
+                        .padding(16.dp)
+                        .onGloballyPositioned { coordinates ->
+                            val rect = coordinates.boundsInWindow()
+                            if (binBounds.size > index) {
+                                binBounds[index] = rect
+                            } else {
+                                binBounds.add(rect)
+                            }
                         }
-                    },
-                    onWrongDrop = {
-                        errorSoundPlayer.start()
-                        currentLottieRes = R.raw.wrong
+                ) {
+                    FruitTrashBin(fruitType = chosenFruits[index])
+                }
+            }
+
+            fruits.forEach { fruitInstance ->
+                key(fruitInstance.id) {
+                    DraggableFruit(
+                        fruitInstance = fruitInstance,
+                        binBounds = binBounds,
+                        chosenFruits = chosenFruits,
+                        onCorrectDrop = {
+                            fruits.remove(fruitInstance)
+                            if (fruits.isEmpty()) {
+                                isGameOver = true
+                            } else {
+                                currentLottieRes = R.raw.correct
+                                successSoundPlayer.start()
+                            }
+                        },
+                        onWrongDrop = {
+                            errorSoundPlayer.start()
+                            currentLottieRes = R.raw.wrong
+                        }
+                    )
+                }
+            }
+
+            currentLottieRes?.let { resId ->
+                DisplayLottieAnimation(
+                    resId = resId,
+                    onDismiss = {
+                        currentLottieRes = null
                     }
                 )
             }
         }
 
-        currentLottieRes?.let { resId ->
-            DisplayLottieAnimation(
-                resId = resId,
-                onDismiss = {
-                    currentLottieRes = null
-                }
-            )
-        }
     }
+
 }
 
 @Preview

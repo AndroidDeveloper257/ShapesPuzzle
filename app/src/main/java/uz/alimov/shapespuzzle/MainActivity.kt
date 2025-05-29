@@ -18,7 +18,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             KoinContext {
                 val navController = rememberNavController()
-                PuzzleNavigationGraph(navController = navController)
+                PuzzleNavigationGraph(
+                    navController = navController,
+                    onExitApp = {
+                        finish()
+                    })
             }
         }
     }
@@ -28,6 +32,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     ShapesPuzzleTheme {
-        PuzzleNavigationGraph(navController = rememberNavController())
+        PuzzleNavigationGraph(
+            navController = rememberNavController(),
+            onExitApp = {}
+        )
     }
 }

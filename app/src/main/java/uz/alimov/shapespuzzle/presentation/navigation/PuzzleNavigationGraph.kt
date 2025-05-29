@@ -16,15 +16,16 @@ import uz.alimov.shapespuzzle.presentation.screen.play.PlayScreen
 
 @Composable
 fun PuzzleNavigationGraph(
-    navController: NavHostController
+    navController: NavHostController,
+    onExitApp: () -> Unit
 ) {
-    Scaffold(
-        modifier = Modifier.fillMaxSize()
-    ) { padding ->
+//    Scaffold(
+//        modifier = Modifier.fillMaxSize()
+//    ) { padding ->
         NavHost(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
+                .fillMaxSize()/*
+                .padding(padding)*/,
             navController = navController,
             startDestination = Home
         ) {
@@ -33,7 +34,8 @@ fun PuzzleNavigationGraph(
                     modifier = Modifier.fillMaxSize(),
                     onNavigateToPlayPuzzle = { navController.navigate(PlayPuzzle) },
                     onNavigateToSorting = { navController.navigate(Sorting(it)) },
-                    onNavigateToHistory = { navController.navigate(History) }
+                    onNavigateToHistory = { navController.navigate(History) },
+                    onExitApp = { onExitApp() }
                 )
             }
             composable<PlayPuzzle> {
@@ -58,6 +60,5 @@ fun PuzzleNavigationGraph(
                 )
             }
         }
-
-    }
+//    }
 }

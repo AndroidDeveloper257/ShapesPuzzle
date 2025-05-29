@@ -50,7 +50,6 @@ fun FruitSortingGame() {
     val allFruits = FruitType.entries.toList()
     val chosenFruits = remember { allFruits.shuffled().take(4) }
 
-    // Remember trash bins' positions on screen
     val binBounds = remember { mutableStateListOf<Rect>() }
 
     val initialFruits = remember {
@@ -69,7 +68,6 @@ fun FruitSortingGame() {
     val fruits = remember { mutableStateListOf<FruitInstance>().apply { addAll(initialFruits) } }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Show bins and record their bounds
         val positions = listOf(
             Alignment.TopStart,
             Alignment.TopEnd,
@@ -96,7 +94,6 @@ fun FruitSortingGame() {
             }
         }
 
-        // Show draggable fruits
         fruits.forEach { fruitInstance ->
             key(fruitInstance.id) {
                 DraggableFruit(
