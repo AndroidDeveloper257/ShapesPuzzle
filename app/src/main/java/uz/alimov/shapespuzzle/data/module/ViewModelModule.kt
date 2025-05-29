@@ -2,6 +2,7 @@ package uz.alimov.shapespuzzle.data.module
 
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+import uz.alimov.shapespuzzle.presentation.screen.fruit_basket.FruitBasketViewModel
 import uz.alimov.shapespuzzle.presentation.screen.history.HistoryViewModel
 import uz.alimov.shapespuzzle.presentation.screen.play.PlayViewModel
 
@@ -15,6 +16,12 @@ val viewModelModule = module {
     viewModel {
         HistoryViewModel(
             getAllResultsUseCase = get(),
+            getRecordUseCase = get()
+        )
+    }
+    viewModel {
+        FruitBasketViewModel(
+            addResultUseCase = get(),
             getRecordUseCase = get()
         )
     }

@@ -8,11 +8,11 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import uz.alimov.shapespuzzle.presentation.screen.fruit_basket.FruitBasketScreen
 import uz.alimov.shapespuzzle.presentation.screen.history.HistoryScreen
 import uz.alimov.shapespuzzle.presentation.screen.home.HomeScreen
 import uz.alimov.shapespuzzle.presentation.screen.play.PlayScreen
-import uz.alimov.shapespuzzle.presentation.screen.testing.FruitSortingGame
 
 @Composable
 fun PuzzleNavigationGraph(
@@ -22,7 +22,9 @@ fun PuzzleNavigationGraph(
         modifier = Modifier.fillMaxSize()
     ) { padding ->
         NavHost(
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
             navController = navController,
             startDestination = Home
         ) {
@@ -30,7 +32,7 @@ fun PuzzleNavigationGraph(
                 HomeScreen(
                     modifier = Modifier.fillMaxSize(),
                     onNavigateToPlayPuzzle = { navController.navigate(PlayPuzzle) },
-                    onNavigateToSorting = { navController.navigate(Sorting) },
+                    onNavigateToSorting = { navController.navigate(Sorting(it)) },
                     onNavigateToHistory = { navController.navigate(History) }
                 )
             }
@@ -41,7 +43,13 @@ fun PuzzleNavigationGraph(
                 )
             }
             composable<Sorting> {
-                FruitSortingGame()
+                val sorting = it.toRoute<Sorting>()
+                FruitBasketScreen(
+                    mode = sorting.mode,
+                    onNavigateBack = {
+                        navController.navigateUp()
+                    }
+                )
             }
             composable<History> {
                 HistoryScreen(

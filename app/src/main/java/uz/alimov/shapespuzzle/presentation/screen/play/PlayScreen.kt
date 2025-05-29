@@ -53,6 +53,8 @@ import uz.alimov.shapespuzzle.R
 import uz.alimov.shapespuzzle.domain.model.HoleItem
 import uz.alimov.shapespuzzle.domain.model.Result
 import uz.alimov.shapespuzzle.domain.model.ShapeItem
+import uz.alimov.shapespuzzle.presentation.component.Congratulate
+import uz.alimov.shapespuzzle.presentation.component.DisplayLottieAnimation
 import uz.alimov.shapespuzzle.presentation.ui.theme.ShapesPuzzleTheme
 import uz.alimov.shapespuzzle.utils.Shape
 import uz.alimov.shapespuzzle.utils.shapeColors
@@ -200,65 +202,6 @@ fun PlayScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun Congratulate(
-    onBack: () -> Unit
-) {
-    val triumphComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.victory))
-    val confettiComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.confetti))
-
-    val triumphProgress by animateLottieCompositionAsState(
-        composition = triumphComposition,
-        iterations = LottieConstants.IterateForever,
-        speed = 1.5f
-    )
-
-    val confettiProgress by animateLottieCompositionAsState(
-        composition = confettiComposition,
-        iterations = LottieConstants.IterateForever,
-        speed = 1f
-    )
-
-    ModalBottomSheet(
-        modifier = Modifier.fillMaxWidth(),
-        onDismissRequest = onBack
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(300.dp)
-                    .fillMaxWidth()
-            ) {
-                LottieAnimation(
-                    composition = confettiComposition,
-                    progress = confettiProgress,
-                    modifier = Modifier.fillMaxSize()
-                )
-                LottieAnimation(
-                    composition = triumphComposition,
-                    progress = triumphProgress,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onBack
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.KeyboardArrowLeft,
-                    contentDescription = null
-                )
-            }
-        }
-    }
-}
-
 @SuppressLint("AutoboxingStateCreation")
 @Composable
 fun ShapeCard(
@@ -384,39 +327,6 @@ fun ShapeCanvas(shape: Shape, color: Color) {
                 }
             }
         }
-    }
-}
-
-@Composable
-fun DisplayLottieAnimation(
-    @RawRes resId: Int,
-    duration: Long = 2000L,
-    onDismiss: () -> Unit
-) {
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(resId))
-    val progress by animateLottieCompositionAsState(
-        composition,
-        iterations = 1,
-        speed = 1.5f
-    )
-
-    LaunchedEffect(Unit) {
-        delay(duration)
-        onDismiss()
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        LottieAnimation(
-            modifier = Modifier
-                .size(150.dp)
-                .padding(bottom = 40.dp),
-            composition = composition,
-            progress = progress
-        )
     }
 }
 

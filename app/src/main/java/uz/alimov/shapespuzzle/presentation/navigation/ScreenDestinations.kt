@@ -1,6 +1,7 @@
 package uz.alimov.shapespuzzle.presentation.navigation
 
 import kotlinx.serialization.Serializable
+import uz.alimov.shapespuzzle.utils.GameMode
 
 @Serializable
 object Home
@@ -9,7 +10,9 @@ object Home
 object PlayPuzzle
 
 @Serializable
-object Sorting
+data class Sorting(
+    val mode: GameMode
+)
 
 @Serializable
 object History
